@@ -1,0 +1,11 @@
+api_key: "XXXXX"
+api_secret: "YYYY"
+base_url: "https://api.binance.com"
+platform: "binance"
+base_url: "https://api.binance.com"
+kline_intervals:
+  - "5m"
+  - "1h"
+  - "1d"
+data_path: "data"
+

@@ -1,0 +1,15 @@
+# Python build, cache, and .vscode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+*.egg-info/
+dist/
+build/
+.vscode/
+
+.venv/  
+venv/
+
+docs/ ## This needs to be generated using Doxygen
