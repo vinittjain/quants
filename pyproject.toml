@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.scripts]
-run_trading = "trading.main:main"
+run_quants = "quants.main:main"
 
 [tool.bumpversion]
 allow_dirty = true
@@ -56,7 +56,7 @@ search = "{current_version}"
 replace = "{new_version}"
 
 [[tool.bumpversion.files]]
-filename = "src/trading/__init__.py"
+filename = "src/quants/__init__.py"
 
 [[tool.bumpversion.files]]
 filename = "README.md"

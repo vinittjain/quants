@@ -1,15 +1,15 @@
 import logging
 import time
 
-from src.trading.auth import BinanceAuth
-from src.trading.config import BinanceConfigLoader
-from src.trading.data_collector import BinanceDataCollector
-from src.trading.platform import BinancePlatform
-from src.trading.task_scheduler import AdvancedTaskScheduler
-from src.trading.utils import setup_logging
+from src.quants.auth import BinanceAuth
+from src.quants.config import BinanceConfigLoader
+from src.quants.data_collector import BinanceDataCollector
+from src.quants.platform import BinancePlatform
+from src.quants.task_scheduler import AdvancedTaskScheduler
+from src.quants.utils import setup_logging
 
 # Setup logging
-logger = setup_logging(log_file="trading.log", log_level=logging.INFO)
+logger = setup_logging(log_file="quants.log", log_level=logging.INFO)
 
 
 def update_interval_data(collector: BinanceDataCollector, interval: str):
