@@ -1,6 +1,7 @@
 import os
-from typing import Dict, List, Union
 from datetime import datetime, timedelta
+from typing import Dict, List, Union
+
 import pandas as pd
 
 from ..platform.binance import BinancePlatform
@@ -15,9 +16,13 @@ class BinanceDataCollector(BaseDataCollector):
         self.platform = platform
         self.base_path = base_path
 
-    def collect_historical_data(self, symbol: str, interval: str, 
-                                start_time: Union[str, datetime], 
-                                end_time: Union[str, datetime]) -> pd.DataFrame:
+    def collect_historical_data(
+        self,
+        symbol: str,
+        interval: str,
+        start_time: Union[str, datetime],
+        end_time: Union[str, datetime],
+    ) -> pd.DataFrame:
         # Convert datetime to string if necessary
         if isinstance(start_time, datetime):
             start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -31,9 +36,13 @@ class BinanceDataCollector(BaseDataCollector):
         klines = self.platform.get_latest_klines(symbol, interval, limit)
         return BinancePlatform.create_dataframe(klines)
 
-    def collect_multiple_symbols(self, symbols: List[str], interval: str, 
-                                 start_time: Union[str, datetime], 
-                                 end_time: Union[str, datetime]) -> Dict[str, pd.DataFrame]:
+    def collect_multiple_symbols(
+        self,
+        symbols: List[str],
+        interval: str,
+        start_time: Union[str, datetime],
+        end_time: Union[str, datetime],
+    ) -> Dict[str, pd.DataFrame]:
         data = {}
         for symbol in symbols:
             df = self.collect_historical_data(symbol, interval, start_time, end_time)
@@ -64,7 +73,7 @@ class BinanceDataCollector(BaseDataCollector):
         symbols = self.get_all_usdt_pairs()
         end_time = datetime.now()
         start_time = end_time - timedelta(days=lookback_days)
-        
+
         data = self.collect_multiple_symbols(symbols, interval, start_time, end_time)
         self.save_data(data, interval)
         logger.info(f"Data updated for all pairs for interval: {interval}")

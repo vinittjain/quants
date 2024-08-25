@@ -42,13 +42,12 @@ class BinancePlatform(BasePlatform):
         self.client = auth.get_client()
         self.spot = auth.get_spot()
 
-    def get_historical_klines(self, symbol: str, interval: str, start_time: str, end_time: str) -> List[List[Any]]:
+    def get_historical_klines(
+        self, symbol: str, interval: str, start_time: str, end_time: str
+    ) -> List[List[Any]]:
         try:
             return self.client.get_historical_klines(
-                symbol, 
-                self.KLINE_INTERVALS.get(interval, interval),
-                start_time,
-                end_time
+                symbol, self.KLINE_INTERVALS.get(interval, interval), start_time, end_time
             )
         except BinanceAPIException as e:
             logger.error(f"Failed to fetch historical klines for {symbol}: {e}")

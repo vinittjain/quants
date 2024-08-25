@@ -11,10 +11,14 @@ from src.trading.utils import setup_logging
 # Setup logging
 logger = setup_logging(log_file="trading.log", log_level=logging.INFO)
 
+
 def update_interval_data(collector: BinanceDataCollector, interval: str):
     logger.info(f"Starting data update for interval: {interval}")
     collector.update_data_for_interval(interval)
-    logger.info(f"Data collection and update completed for all USDT pairs for interval: {interval}")
+    logger.info(
+        f"Data collection and update completed for all USDT pairs for interval: {interval}"
+    )
+
 
 def main():
     config_loader = BinanceConfigLoader()
@@ -38,17 +42,18 @@ def main():
     try:
         scheduler.run()
         logger.info("Scheduler started. Waiting for tasks to run...")
-        
+
         # Run initial update for all intervals
         for interval in config.kline_intervals:
             update_interval_data(collector, interval)
-        
+
         while True:
             time.sleep(60)  # Sleep for 60 seconds
             logger.info("Main thread still running. Scheduler is active.")
     except KeyboardInterrupt:
         logger.info("Stopping scheduler...")
         scheduler.stop()
+
 
 if __name__ == "__main__":
     main()
