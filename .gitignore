@@ -12,4 +12,4 @@ build/
 .venv/  
 venv/
 
-docs/ ## This needs to be generated using Doxygen
+docs/*
