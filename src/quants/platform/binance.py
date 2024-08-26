@@ -1,14 +1,14 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 
 from ..auth.binance import BinanceAuth
-from ..utils.logger import setup_logging
+from ..utils import get_logger
 from .base import BasePlatform
 
-logger = setup_logging(__name__)
+logger = get_logger(__name__)
 
 
 class BinancePlatform(BasePlatform):
@@ -45,6 +45,7 @@ class BinancePlatform(BasePlatform):
     def get_historical_klines(
         self, symbol: str, interval: str, start_time: str, end_time: str
     ) -> List[List[Any]]:
+
         try:
             return self.client.get_historical_klines(
                 symbol, self.KLINE_INTERVALS.get(interval, interval), start_time, end_time
@@ -75,9 +76,10 @@ class BinancePlatform(BasePlatform):
             return []
 
     @staticmethod
-    def create_dataframe(klines: List[Dict[str, Any]]) -> pd.DataFrame:
-        df = pd.DataFrame(klines)
+    def create_dataframe(klines: List[List[Any]]) -> pd.DataFrame:
+        df = pd.DataFrame(klines, columns=BinancePlatform.KLINE_COLS)
         df["open_time"] = pd.to_datetime(df["open_time"], unit="ms")
+        df["close_time"] = pd.to_datetime(df["close_time"], unit="ms")
         for col in df.columns:
             if col not in ["open_time", "close_time"]:
                 df[col] = df[col].astype(float)

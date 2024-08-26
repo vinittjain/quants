@@ -6,17 +6,19 @@ from src.quants.config import BinanceConfigLoader
 from src.quants.data_collector import BinanceDataCollector
 from src.quants.platform import BinancePlatform
 from src.quants.task_scheduler import AdvancedTaskScheduler
-from src.quants.utils import setup_logging
+from src.quants.utils.logger import clear_old_logs, get_logger, setup_logging
 
 # Setup logging
-logger = setup_logging(log_file="quants.log", log_level=logging.INFO)
+LOG_DIR = "logs"
+setup_logging(log_dir=LOG_DIR, log_level=logging.INFO)
+logger = get_logger(__name__)
 
 
-def update_interval_data(collector: BinanceDataCollector, interval: str):
-    logger.info(f"Starting data update for interval: {interval}")
-    collector.update_data_for_interval(interval)
+def update_interval_data(collector: BinanceDataCollector, kline_interval: str):
+    logger.info(f"Starting data update for interval: {kline_interval}")
+    collector.update_data_for_interval(kline_interval)
     logger.info(
-        f"Data collection and update completed for all USDT pairs for interval: {interval}"
+        f"Data collection and update completed for all USDT pairs for interval: {kline_interval}"
     )
 
 
@@ -36,8 +38,17 @@ def main():
             interval=interval,
             task=update_interval_data,
             collector=collector,
-            kline_interval=interval,  # Changed from 'interval' to 'kline_interval'
+            kline_interval=interval,
         )
+
+    # Schedule log cleaning task
+    scheduler.add_task(
+        name="clean_old_logs",
+        interval="1d",  # Run daily
+        task=clear_old_logs,
+        log_dir=LOG_DIR,
+        days_to_keep=30,
+    )
 
     try:
         scheduler.run()

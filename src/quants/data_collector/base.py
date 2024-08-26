@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import pandas as pd
 
@@ -8,7 +8,11 @@ import pandas as pd
 class BaseDataCollector(ABC):
     @abstractmethod
     def collect_historical_data(
-        self, symbol: str, interval: str, start_time: datetime, end_time: datetime
+        self,
+        symbol: str,
+        interval: str,
+        start_time: Union[str, datetime],
+        end_time: Union[str, datetime],
     ) -> pd.DataFrame:
         """
         Collect historical data for a given symbol and time range.

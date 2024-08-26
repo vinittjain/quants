@@ -1,22 +1,23 @@
-import logging
-
 import yaml
 
+from ..utils import get_logger
 from .base import BaseConfig, BaseConfigLoader
+
+logger = get_logger(__name__)
 
 
 class BinanceConfigLoader(BaseConfigLoader):
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
+        pass
 
     def load_config(self, config_path: str) -> BaseConfig:
         try:
             with open(config_path, "r") as f:
                 config_data = yaml.safe_load(f)
-            self.logger.info(f"Configuration loaded successfully from {config_path}")
+            logger.info(f"Configuration loaded successfully from {config_path}")
             return BaseConfig(**config_data)
         except Exception as e:
-            self.logger.error(f"Error loading configuration from {config_path}: {str(e)}")
+            logger.error(f"Error loading configuration from {config_path}: {str(e)}")
             raise
 
     def save_config(self, config: BaseConfig, config_path: str) -> None:
@@ -31,7 +32,7 @@ class BinanceConfigLoader(BaseConfigLoader):
             }
             with open(config_path, "w") as f:
                 yaml.dump(config_dict, f)
-            self.logger.info(f"Configuration saved successfully to {config_path}")
+            logger.info(f"Configuration saved successfully to {config_path}")
         except Exception as e:
-            self.logger.error(f"Error saving configuration to {config_path}: {str(e)}")
+            logger.error(f"Error saving configuration to {config_path}: {str(e)}")
             raise

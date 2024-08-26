@@ -32,7 +32,10 @@ dev = [
     "coverage",
     "isort",
     "bumpversion",
-    "pytest"
+    "pytest",
+    "types-PyYAML",
+    "types-python-dateutil",
+    "types-requests"
 ]
 
 [project.scripts]
@@ -73,7 +76,7 @@ line_length = 99
 
 [tool.flake8]
 max-line-length = 99
-extend-ignore = "E203, W503"
+extend-ignore = "E203"
 exclude = [
     ".git",
     "__pycache__",
@@ -85,3 +88,4 @@ exclude = [
 
 [tool.mypy]
 ignore_missing_imports = true
+explicit_package_bases = true

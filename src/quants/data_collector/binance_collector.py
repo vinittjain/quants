@@ -5,10 +5,10 @@ from typing import Dict, List, Union
 import pandas as pd
 
 from ..platform.binance import BinancePlatform
-from ..utils.logger import setup_logging
+from ..utils.logger import get_logger
 from .base import BaseDataCollector
 
-logger = setup_logging(__name__)
+logger = get_logger(__name__)
 
 
 class BinanceDataCollector(BaseDataCollector):
@@ -23,13 +23,13 @@ class BinanceDataCollector(BaseDataCollector):
         start_time: Union[str, datetime],
         end_time: Union[str, datetime],
     ) -> pd.DataFrame:
-        # Convert datetime to string if necessary
-        if isinstance(start_time, datetime):
-            start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
-        if isinstance(end_time, datetime):
-            end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
+        # Convert datetime to string format expected by Binance API
+        start_time_str = start_time.strftime("%Y-%m-%d %H:%M:%S")
+        end_time_str = end_time.strftime("%Y-%m-%d %H:%M:%S")
 
-        klines = self.platform.get_historical_klines(symbol, interval, start_time, end_time)
+        klines = self.platform.get_historical_klines(
+            symbol, interval, start_time_str, end_time_str
+        )
         return self.platform.create_dataframe(klines)
 
     def collect_latest_data(self, symbol: str, interval: str, limit: int = 100) -> pd.DataFrame:
@@ -50,6 +50,14 @@ class BinanceDataCollector(BaseDataCollector):
                 data[symbol] = df
         return data
 
+    def load_data(self, symbol: str, interval: str) -> pd.DataFrame:
+        file_path = os.path.join(self.base_path, symbol, f"{interval}.csv")
+        try:
+            return pd.read_csv(file_path, parse_dates=["open_time"])
+        except FileNotFoundError:
+            logger.info(f"No existing data found for {symbol} at interval {interval}")
+            return pd.DataFrame()
+
     def save_data(self, data: Dict[str, pd.DataFrame], interval: str) -> None:
         for symbol, df in data.items():
             directory = os.path.join(self.base_path, symbol)
@@ -58,24 +66,19 @@ class BinanceDataCollector(BaseDataCollector):
             df.to_csv(file_path, index=False)
             logger.info(f"Data saved to {file_path}")
 
-    def load_data(self, symbol: str, interval: str) -> pd.DataFrame:
-        file_path = os.path.join(self.base_path, symbol, f"{interval}.csv")
-        try:
-            return pd.read_csv(file_path, parse_dates=["open_time"])
-        except FileNotFoundError:
-            logger.error(f"File not found: {file_path}")
-            return pd.DataFrame()
-
     def get_all_usdt_pairs(self) -> List[str]:
         return self.platform.get_all_usdt_pairs()
 
-    def update_data_for_interval(self, interval: str, lookback_days: int = 30) -> None:
+    def update_data_for_interval(self, interval: str, lookback_days: int = 1) -> None:
         symbols = self.get_all_usdt_pairs()
         end_time = datetime.now()
         start_time = end_time - timedelta(days=lookback_days)
 
-        data = self.collect_multiple_symbols(symbols, interval, start_time, end_time)
-        self.save_data(data, interval)
+        for symbol in symbols:
+            new_data = self.collect_historical_data(symbol, interval, start_time, end_time)
+            if not new_data.empty:
+                self.merge_new_data(symbol, interval, new_data)
+
         logger.info(f"Data updated for all pairs for interval: {interval}")
 
     def merge_new_data(self, symbol: str, interval: str, new_data: pd.DataFrame) -> None:
@@ -88,7 +91,6 @@ class BinanceDataCollector(BaseDataCollector):
                 .drop_duplicates(subset=["open_time"])
                 .sort_values("open_time")
             )
-
         self.save_data({symbol: merged_data}, interval)
 
     def get_symbols(self) -> List[str]:
