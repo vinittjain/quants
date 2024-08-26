@@ -4,13 +4,13 @@ from typing import Any, Callable, Dict
 
 import schedule
 
-from ..utils.logger import setup_logging
+from ..utils.logger import get_logger
 from .base import BaseTaskScheduler
 
-logger = setup_logging(__name__)
+logger = get_logger(__name__)
 
 
-class AdvancedTaskScheduler:
+class AdvancedTaskScheduler(BaseTaskScheduler):
     def __init__(self):
         self.tasks = {}
         self.running = False

@@ -1,17 +1,12 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 
 class BasePlatform(ABC):
     @abstractmethod
     def get_historical_klines(
-        self,
-        symbol: str,
-        interval: str,
-        start_time: datetime,
-        end_time: datetime,
-    ) -> List[Dict[str, Any]]:
+        self, symbol: str, interval: str, start_time: str, end_time: str
+    ) -> List[List[Any]]:
         pass
 
     @abstractmethod

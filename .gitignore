@@ -13,3 +13,6 @@ build/
 venv/
 
 docs/*
+
+logs/
+data/
