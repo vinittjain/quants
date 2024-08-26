@@ -1,6 +1,6 @@
 from typing import Any, Dict, Type
 
-from .logger import setup_logging
+from .logger import clear_old_logs, get_logger, setup_logging
 
 
 class Singleton(type):
@@ -14,4 +14,4 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-__all__ = ["setup_logging", "Singleton"]
+__all__ = ["setup_logging", "get_logger", "clear_old_logs", "Singleton"]
