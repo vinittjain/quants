@@ -1,11 +1,12 @@
 import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Union
-import pytz
-import pandas as pd
 
+import pandas as pd
+import pytz
+
+from ..config.base import CEXConfig
 from ..platform.binance import BinancePlatform
-from ..config.base import BaseConfig
 from ..utils.logger import get_logger
 from .base import BaseDataCollector
 
@@ -13,9 +14,10 @@ logger = get_logger(__name__)
 
 
 class BinanceDataCollector(BaseDataCollector):
-    def __init__(self, platform: BinancePlatform, config: BaseConfig):
+    def __init__(self, platform: BinancePlatform, config: CEXConfig):
         self.platform = platform
-        self.base_path = config.data_path
+        self.data_dir = os.path.join(config.data_path, "csv_data")
+        os.makedirs(self.data_dir, exist_ok=True)
         self.local_tz = pytz.timezone(config.timezone)
         self.utc_tz = pytz.UTC
 
@@ -71,20 +73,29 @@ class BinanceDataCollector(BaseDataCollector):
                 data[symbol] = df
         return data
 
-    def load_data(self, symbol: str, interval: str, base_path: str = "") -> pd.DataFrame:
-        file_path = os.path.join(base_path or self.base_path, symbol, f"{interval}.csv")
+    def load_data(self, symbol: str, interval: str) -> pd.DataFrame:
+        file_path = os.path.join(self.data_dir, symbol, f"{interval}.csv")
         try:
-            df = pd.read_csv(file_path, parse_dates=['open_time', 'close_time'])
-            df['open_time'] = pd.to_datetime(df['open_time']).dt.tz_localize(self.local_tz)
-            df['close_time'] = pd.to_datetime(df['close_time']).dt.tz_localize(self.local_tz)
+            df = pd.read_csv(file_path, parse_dates=["open_time", "close_time"])
+            logger.info(f"Data loaded from {file_path}")
+            
+            # Convert to timezone-aware datetime if not already
+            if df['open_time'].dt.tz is None:
+                df["open_time"] = df["open_time"].dt.tz_localize(self.utc_tz).dt.tz_convert(self.local_tz)
+                df["close_time"] = df["close_time"].dt.tz_localize(self.utc_tz).dt.tz_convert(self.local_tz)
+            else:
+                df["open_time"] = df["open_time"].dt.tz_convert(self.local_tz)
+                df["close_time"] = df["close_time"].dt.tz_convert(self.local_tz)
+            
             return df
         except FileNotFoundError:
             logger.info(f"No existing data found for {symbol} at interval {interval}")
             return pd.DataFrame()
 
+
     def save_data(self, data: Dict[str, pd.DataFrame], interval: str) -> None:
         for symbol, df in data.items():
-            directory = os.path.join(self.base_path, symbol)
+            directory = os.path.join(self.data_dir, symbol)
             os.makedirs(directory, exist_ok=True)
             file_path = os.path.join(directory, f"{interval}.csv")
             df.to_csv(file_path, index=False)
