@@ -29,6 +29,7 @@ class BinanceConfigLoader(BaseConfigLoader):
                 "platform": config.platform,
                 "kline_intervals": config.kline_intervals,
                 "data_path": config.data_path,
+                "timezone": config.timezone,
             }
             with open(config_path, "w") as f:
                 yaml.dump(config_dict, f)

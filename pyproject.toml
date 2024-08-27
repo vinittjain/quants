@@ -20,7 +20,8 @@ dependencies = [
     "matplotlib",
     "seaborn",
     "loguru",
-    "pyyaml"  # Added for config file handling
+    "pyyaml",  # Added for config file handling
+    "pytz"
 ]
 
 [project.optional-dependencies]

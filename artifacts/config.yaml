@@ -3,8 +3,9 @@ api_secret: "YYYY"
 base_url: "https://api.binance.com"
 platform: "binance"
 kline_intervals:
-  - "1h"
   - "4h"
+  - "8h"
   - "1d"
 data_path: "data"
+timezone: "Asia/Singapore"
 

@@ -11,6 +11,7 @@ class BaseConfig:
     platform: str
     kline_intervals: List[str]
     data_path: str
+    timezone: str
 
 
 class BaseConfigLoader(ABC):

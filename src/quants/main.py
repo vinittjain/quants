@@ -6,6 +6,7 @@ from src.quants.config import BinanceConfigLoader
 from src.quants.data_collector import BinanceDataCollector
 from src.quants.platform import BinancePlatform
 from src.quants.task_scheduler import AdvancedTaskScheduler
+from src.quants.strategies import StrategyManager
 from src.quants.utils.logger import clear_old_logs, get_logger, setup_logging
 
 # Setup logging
@@ -28,7 +29,7 @@ def main():
 
     auth = BinanceAuth(config.api_key, config.api_secret)
     platform = BinancePlatform(auth)
-    collector = BinanceDataCollector(platform, base_path=config.data_path)
+    collector = BinanceDataCollector(platform, config)
     scheduler = AdvancedTaskScheduler()
 
     # Schedule tasks for each kline interval
