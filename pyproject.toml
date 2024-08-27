@@ -21,7 +21,8 @@ dependencies = [
     "seaborn",
     "loguru",
     "pyyaml",  # Added for config file handling
-    "pytz"
+    "pytz",
+    "mplfinance"
 ]
 
 [project.optional-dependencies]
