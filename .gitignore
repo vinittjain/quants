@@ -16,3 +16,17 @@ docs/*
 
 logs/
 data/
+
+
+
+# Ignore running config
+
+artifacts/run_config.yaml
+
+
+# Ignore all files in the strategies directory
+src/quants/strategies/*
+
+# But don't ignore these files
+!src/quants/strategies/__init__.py
+!src/quants/strategies/base.py
