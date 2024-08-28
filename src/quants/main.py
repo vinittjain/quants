@@ -2,31 +2,25 @@ import logging
 import time
 from typing import Any
 
+from .config import ConfigFactory, ConfigLoader
 from src.quants.auth import BinanceAuth
 from src.quants.data_collector import BinanceDataCollector
 from src.quants.db.trigger_log import TriggerLog
 from src.quants.platform import BinancePlatform
 from src.quants.strategies import StrategyManager
 from src.quants.task_scheduler import AdvancedTaskScheduler
-from src.quants.utils.logger import clear_old_logs, get_logger, setup_logging
 from src.quants.visualization.chart_drawer import ChartDrawer
-
-from .config import ConfigFactory, ConfigLoader
-from .strategy_runner import StrategyRunner
+from src.quants.utils.logger import clear_old_logs, get_logger, setup_logging
 
 # Setup logging
 LOG_DIR = "logs"
 setup_logging(log_dir=LOG_DIR, log_level=logging.INFO)
 logger = get_logger(__name__)
 
-
 def update_interval_data(collector: BinanceDataCollector, kline_interval: str):
     logger.info(f"Starting data update for interval: {kline_interval}")
     collector.update_data_for_interval(kline_interval)
-    logger.info(
-        f"Data collection and update completed for all USDT pairs for interval: {kline_interval}"
-    )
-
+    logger.info(f"Data collection and update completed for all USDT pairs for interval: {kline_interval}")
 
 def run_strategy(
     collector: BinanceDataCollector,
@@ -65,9 +59,7 @@ def run_strategy(
         )
         trigger_log.close()
 
-
 def main():
-
     full_config = ConfigLoader(config_path="artifacts/config.yaml")
     app_config = ConfigFactory.create_app_config(full_config)
 
@@ -84,7 +76,7 @@ def main():
                 scheduler.add_task(
                     name=f"run_{strategy_name}_{symbol}_{interval}",
                     interval=interval,
-                    task=run_strategy,  # You'll need to define this function
+                    task=run_strategy,
                     strategy_name=strategy_name,
                     symbol=symbol,
                     kline_interval=interval,
@@ -117,18 +109,12 @@ def main():
         for interval in app_config.cex.kline_intervals:
             update_interval_data(collector, interval)
 
-        # for strategy_name, strategy_config in app_config.strategies.items():
-        #     for interval in app_config.cex.kline_intervals:
-        #         for symbol in platform.get_all_usdt_pairs():
-        #             run_strategy(collector, strategy_name, symbol, interval, app_config.strategies)
-
         while True:
             time.sleep(60)  # Sleep for 60 seconds
             logger.info("Main thread still running. Scheduler is active.")
     except KeyboardInterrupt:
         logger.info("Stopping scheduler...")
         scheduler.stop()
-
 
 if __name__ == "__main__":
     main()

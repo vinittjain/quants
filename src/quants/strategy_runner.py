@@ -58,5 +58,5 @@ class StrategyRunner:
 
         logger.info(f"Strategy run completed for {strategy_name} on {symbol} ({interval})")
 
-    def get_available_strategies(self) -> List[str]:
+    def get_available_strategies(self) -> list[str]:
         return list(self.strategies.keys())
