@@ -1,6 +1,8 @@
 import logging
 import time
 
+from typing import Any
+
 
 from .config import ConfigFactory, ConfigLoader
 from src.quants.auth import BinanceAuth
@@ -28,14 +30,14 @@ def update_interval_data(collector: BinanceDataCollector, kline_interval: str):
     )
 
 
-def run_strategy(collector: BinanceDataCollector, strategy_name: str, symbol: str, kline_interval: str):
+def run_strategy(collector: BinanceDataCollector, strategy_name: str, symbol: str, kline_interval: str, config: Any):
     logger.info(f"Running {strategy_name} strategy for {symbol} on {kline_interval} interval")
     data = collector.load_data(symbol, kline_interval)
     if data.empty:
         logger.warning(f"No data available for {symbol} on {kline_interval} interval")
         return
 
-    strategy_manager = StrategyManager()
+    strategy_manager = StrategyManager(config)
     strategy = strategy_manager.get_strategy(strategy_name)
     if not strategy:
         logger.error(f"Strategy {strategy_name} not found")
@@ -65,7 +67,7 @@ def main():
     platform = BinancePlatform(auth)
     collector = BinanceDataCollector(platform, app_config.cex)
     strategy_manager = StrategyManager(config=app_config.strategies)
-    runner = StrategyRunner(collector, strategy_manager, app_config.cex)
+    runner = StrategyRunner(collector, app_config.strategies)
     scheduler = AdvancedTaskScheduler()
 
 
@@ -107,6 +109,12 @@ def main():
         # Run initial update for all intervals
         for interval in app_config.cex.kline_intervals:
             update_interval_data(collector, interval)
+        
+        # for strategy_name, strategy_config in app_config.strategies.items():
+        #     for interval in app_config.cex.kline_intervals:
+        #         for symbol in platform.get_all_usdt_pairs():
+        #             run_strategy(collector, strategy_name, symbol, interval, app_config.strategies)
+
 
         while True:
             time.sleep(60)  # Sleep for 60 seconds
