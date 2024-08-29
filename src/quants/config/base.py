@@ -40,7 +40,12 @@ class StrategyConfig:
     name: str
     parameters: Dict[str, Any]
 
+class AnalysisConfig:
+    name: str
+    parameters: Dict[str, Any]
+
 @dataclass
 class AppConfig:
     cex: CEXConfig
+    analysis: AnalysisConfig
     strategies: Dict[str, StrategyConfig]
