@@ -134,3 +134,22 @@ class BinanceDataCollector(BaseDataCollector):
             for s in exchange_info.get("symbols", [])
             if s["symbol"].endswith("USDT") and s["status"] == "TRADING"
         ]
+
+    def collect_price_data(self, symbols: List[str], interval: str, lookback_days: int = 30) -> Dict[str, pd.DataFrame]:
+        price_data = {}
+        for symbol in symbols:
+            data = self.collect_historical_data(symbol, interval, lookback_days)
+            if not data.empty:
+                price_data[symbol] = data[['close']]
+        return price_data
+
+    def collect_market_cap_data(self, symbols: List[str]) -> Dict[str, float]:
+        market_cap_data = {}
+        for symbol in symbols:
+            try:
+                ticker = self.platform.client.get_ticker(symbol=symbol)
+                market_cap = float(ticker['volume']) * float(ticker['lastPrice'])
+                market_cap_data[symbol] = market_cap
+            except Exception as e:
+                logger.error(f"Failed to fetch market cap for {symbol}: {e}")
+        return market_cap_data

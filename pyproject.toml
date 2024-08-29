@@ -22,7 +22,8 @@ dependencies = [
     "loguru",
     "pyyaml",  # Added for config file handling
     "pytz",
-    "mplfinance"
+    "mplfinance",
+    "networkx"
 ]
 
 [project.optional-dependencies]
