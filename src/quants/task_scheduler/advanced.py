@@ -42,6 +42,8 @@ class AdvancedTaskScheduler:
             job = schedule.every(int(interval[:-1])).hours
         elif interval.endswith("d"):
             job = schedule.every(int(interval[:-1])).days
+        elif interval.endswith("w"):
+            job = schedule.every(int(interval[:-1])).weeks
         else:
             raise ValueError(f"Invalid interval format: {interval}")
 

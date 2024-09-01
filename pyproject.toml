@@ -25,8 +25,9 @@ dependencies = [
     "pytz",
     "mplfinance",
     "networkx",
-    "ta"
-]
+    "ta",
+    "sklearn",
+    "bokeh",]
 
 [project.optional-dependencies]
 dev = [
