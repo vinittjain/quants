@@ -7,15 +7,17 @@ from .strategies.base import BaseStrategy
 from .utils.logger import get_logger
 from .visualization.chart_drawer import ChartDrawer
 
+from src.quants.config import AppConfig
+
 logger = get_logger(__name__)
 
 
 class StrategyRunner:
-    def __init__(self, collector, config):
+    def __init__(self, collector: Any, config: AppConfig):
         self.collector = collector
         self.config = config
-        self.chart_drawer = ChartDrawer(os.path.join(config.data_path, "charts"))
-        self.trigger_log = TriggerLog(os.path.join(config.data_path, "trigger_log.db"))
+        self.chart_drawer = ChartDrawer(os.path.join(config.data_storage.data_path, "charts"))
+        self.trigger_log = TriggerLog(os.path.join(config.data_storage.data_path, "trigger_log.db"))
         self.strategies = self._load_strategies(config.strategies)
 
     def _load_strategies(self, strategy_config: Dict[str, Any]) -> Dict[str, BaseStrategy]:
@@ -44,6 +46,10 @@ class StrategyRunner:
         result = strategy.run(data)
         if result["trigger"]:
             logger.info(f"Trigger condition met for {strategy_name} on {symbol} ({interval})")
+            logger.debug(f"Trigger time: {result['trigger_time']}")
+            logger.debug(f"Data index range: {data.index.min()} to {data.index.max()}")
+            logger.debug(f"Trigger time type: {type(result['trigger_time'])}")
+            logger.debug(f"Index type: {type(data.index[0])}")
             chart_path = self.chart_drawer.draw_candlestick(
                 data, symbol, interval, strategy_name, result["trigger_time"]
             )

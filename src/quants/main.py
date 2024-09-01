@@ -6,11 +6,12 @@ from .config import ConfigFactory, ConfigLoader
 from src.quants.auth import BinanceAuth
 from src.quants.data_collector import BinanceDataCollector
 from src.quants.platform import BinancePlatform
-from src.quants.strategies import StrategyRunner
-from src.quants.analysis import AnalysisRunner
 from src.quants.task_scheduler import AdvancedTaskScheduler
 from src.quants.visualization.chart_drawer import ChartDrawer
 from src.quants.utils.logger import clear_old_logs, get_logger, setup_logging
+
+from src.quants.analysis_runner import AnalysisRunner
+from src.quants.strategy_runner import StrategyRunner
 
 # Setup logging
 LOG_DIR = "logs"
@@ -22,48 +23,16 @@ def update_interval_data(collector: BinanceDataCollector, kline_interval: str):
     collector.update_data_for_interval(kline_interval)
     logger.info(f"Data collection and update completed for all USDT pairs for interval: {kline_interval}")
 
-def run_strategy(
-    collector: BinanceDataCollector,
-    strategy_name: str,
-    symbol: str,
-    kline_interval: str,
-    config: Any,
-):
+def run_strategy(strategy_runner: StrategyRunner, strategy_name: str,symbol: str,kline_interval: str):
     logger.info(f"Running {strategy_name} strategy for {symbol} on {kline_interval} interval")
-    data = collector.load_data(symbol, kline_interval)
-    if data.empty:
-        logger.warning(f"No data available for {symbol} on {kline_interval} interval")
-        return
-
-    strategy_manager = StrategyManager(config)
-    strategy = strategy_manager.get_strategy(strategy_name)
-    if not strategy:
-        logger.error(f"Strategy {strategy_name} not found")
-        return
-
-    data_with_signals = strategy.generate_signals(data)
-
-    if strategy.check_trigger(data_with_signals):
-        logger.info(f"Trigger condition met for {strategy_name} on {symbol} ({kline_interval})")
-
-        chart_drawer = ChartDrawer()
-        trigger_time = data_with_signals.index[-1]
-        chart_path = chart_drawer.draw_candlestick(
-            data_with_signals, symbol, kline_interval, strategy_name, trigger_time
-        )
-
-        trigger_log = TriggerLog()
-        signal = "BUY" if data_with_signals["signal"].iloc[-1] == 1 else "SELL"
-        trigger_log.log_trigger(
-            trigger_time, symbol, kline_interval, strategy_name, signal, chart_path
-        )
-        trigger_log.close()
+    strategy_runner.run_strategy(strategy_name, symbol, kline_interval)
+    logger.info(f"Strategy {strategy_name} completed for {symbol} on {kline_interval} interval")
 
 
-def run_analysis(analysis_runner: AnalysisRunner, analysis_name: str, symbols: list[str], interval: str):
-    logger.info(f"Starting analysis: {analysis_name}")
-    result = analysis_runner.run_analysis(analysis_name, symbols, interval)
-    logger.info(f"Analysis {analysis_name} completed. Most influential tokens: {result.get('influential_tokens', [])}")
+# def run_analysis(analysis_runner: AnalysisRunner, analysis_name: str, symbols: list[str], interval: str):
+#     logger.info(f"Starting analysis: {analysis_name}")
+#     result = analysis_runner.run_analysis(analysis_name, symbols, interval)
+#     logger.info(f"Analysis {analysis_name} completed. Most influential tokens: {result.get('influential_tokens', [])}")
 
 
 def main():
@@ -72,37 +41,24 @@ def main():
 
     auth = BinanceAuth(app_config.cex.api_key, app_config.cex.api_secret)
     platform = BinancePlatform(auth)
-    collector = BinanceDataCollector(platform, app_config.cex)
-    strategy_manager = StrategyManager(config=app_config.strategies)
+    collector = BinanceDataCollector(platform, app_config)
 
-    strategy_runner = StrategyRunner(collector, app_config.strategies)
-    analysis_runner = AnalysisRunner(collector, app_config.analysis)
+    strategy_runner = StrategyRunner(collector, app_config)
+    # analysis_runner = AnalysisRunner(collector, app_config.analysis)
     scheduler = AdvancedTaskScheduler()
 
 
-    for strategy_name in strategy_runner.get_available_strategies():
-    for interval in app_config.cex.kline_intervals:
-        for symbol in platform.get_all_usdt_pairs():
-            scheduler.add_task(
-                name=f"run_strategy_{strategy_name}_{symbol}_{interval}",
-                interval=interval,
-                task=strategy_runner.run_strategy,
-                strategy_name=strategy_name,
-                symbol=symbol,
-                interval=interval
-                )
-
     # Schedule analysis tasks
-    for analysis_name in analysis_runner.get_available_analyses():
-        scheduler.add_task(
-            name=f"run_analysis_{analysis_name}",
-            interval="1d",  # Run analysis daily
-            task=run_analysis,
-            analysis_runner=analysis_runner,
-            analysis_name=analysis_name,
-            symbols=platform.get_all_usdt_pairs(),
-            interval="1d"  # Use daily data for analysis
-        )
+    # for analysis_name in analysis_runner.get_available_analyses():
+    #     scheduler.add_task(
+    #         name=f"run_analysis_{analysis_name}",
+    #         interval="1d",  # Run analysis daily
+    #         task=run_analysis,
+    #         analysis_runner=analysis_runner,
+    #         analysis_name=analysis_name,
+    #         symbols=platform.get_all_usdt_pairs(),
+    #         interval="1d"  # Use daily data for analysis
+    #     )
 
 
     # Schedule tasks for each kline interval
@@ -114,6 +70,21 @@ def main():
             collector=collector,
             kline_interval=interval,
         )
+
+    for strategy_name in strategy_runner.get_available_strategies():
+        for interval in app_config.cex.kline_intervals:
+            for symbol in platform.get_all_usdt_pairs():
+                task_name = f"run_strategy_{strategy_name}_{symbol}_{interval}"
+                scheduler.add_task(
+                    name=task_name,
+                    interval=interval,
+                    task=run_strategy,
+                    runner=strategy_runner,
+                    strategy_name=strategy_name,
+                    symbol=symbol,
+                    kline_interval=interval
+                    )
+                logger.debug(f"Scheduled task: {task_name}")
 
     # Schedule log cleaning task
     scheduler.add_task(
@@ -128,9 +99,13 @@ def main():
         scheduler.run()
         logger.info("Scheduler started. Waiting for tasks to run...")
 
-        # Run initial update for all intervals
         for interval in app_config.cex.kline_intervals:
             update_interval_data(collector, interval)
+
+        for strategy_name in strategy_runner.get_available_strategies():
+            for interval in app_config.cex.kline_intervals:
+                for symbol in platform.get_all_usdt_pairs():
+                    run_strategy(strategy_runner, strategy_name, symbol, interval)
 
         while True:
             time.sleep(60)  # Sleep for 60 seconds

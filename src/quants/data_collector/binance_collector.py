@@ -5,7 +5,7 @@ from typing import Dict, List, Union
 import pandas as pd
 import pytz
 
-from ..config.base import CEXConfig
+from ..config.base import AppConfig
 from ..platform.binance import BinancePlatform
 from ..utils.logger import get_logger
 from .base import BaseDataCollector
@@ -14,11 +14,11 @@ logger = get_logger(__name__)
 
 
 class BinanceDataCollector(BaseDataCollector):
-    def __init__(self, platform: BinancePlatform, config: CEXConfig):
+    def __init__(self, platform: BinancePlatform, config: AppConfig):
         self.platform = platform
-        self.data_dir = os.path.join(config.data_path, "csv_data")
+        self.data_dir = os.path.join(config.data_storage.data_path, "csv_data")
         os.makedirs(self.data_dir, exist_ok=True)
-        self.local_tz = pytz.timezone(config.timezone)
+        self.local_tz = pytz.timezone(config.cex.timezone)
         self.utc_tz = pytz.UTC
 
     def collect_historical_data(
@@ -104,7 +104,7 @@ class BinanceDataCollector(BaseDataCollector):
     def get_all_usdt_pairs(self) -> List[str]:
         return self.platform.get_all_usdt_pairs()
 
-    def update_data_for_interval(self, interval: str, lookback_days: int = 30) -> None:
+    def update_data_for_interval(self, interval: str, lookback_days: int = 1) -> None:
         symbols = self.get_all_usdt_pairs()
         end_time = datetime.now(self.local_tz)
         start_time = end_time - timedelta(days=lookback_days)
