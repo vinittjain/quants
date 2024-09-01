@@ -1,12 +1,14 @@
 import time
+from concurrent.futures import ThreadPoolExecutor
 from threading import Event, Thread
 from typing import Any, Callable, Dict
-from concurrent.futures import ThreadPoolExecutor
+
 import schedule
 
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 class AdvancedTaskScheduler:
     def __init__(self, max_workers: int = 10):
@@ -28,7 +30,9 @@ class AdvancedTaskScheduler:
         }
         logger.info(f"Task '{name}' added with interval {interval}")
 
-    def _schedule_task(self, interval: str, name: str, task: Callable, **kwargs: Any) -> schedule.Job:
+    def _schedule_task(
+        self, interval: str, name: str, task: Callable, **kwargs: Any
+    ) -> schedule.Job:
         job = None
         if interval.endswith("s"):
             job = schedule.every(int(interval[:-1])).seconds
@@ -40,7 +44,7 @@ class AdvancedTaskScheduler:
             job = schedule.every(int(interval[:-1])).days
         else:
             raise ValueError(f"Invalid interval format: {interval}")
-        
+
         return job.do(self._run_task, name, task, **kwargs)
 
     def _run_task(self, name: str, task: Callable, **kwargs: Any) -> None:

@@ -2,12 +2,12 @@ import importlib
 import os
 from typing import Any, Dict
 
+from src.quants.config import AppConfig
+
 from .db.trigger_log import TriggerLog
 from .strategies.base import BaseStrategy
 from .utils.logger import get_logger
 from .visualization.chart_drawer import ChartDrawer
-
-from src.quants.config import AppConfig
 
 logger = get_logger(__name__)
 
@@ -17,7 +17,9 @@ class StrategyRunner:
         self.collector = collector
         self.config = config
         self.chart_drawer = ChartDrawer(os.path.join(config.data_storage.data_path, "charts"))
-        self.trigger_log = TriggerLog(os.path.join(config.data_storage.data_path, "trigger_log.db"))
+        self.trigger_log = TriggerLog(
+            os.path.join(config.data_storage.data_path, "trigger_log.db")
+        )
         self.strategies = self._load_strategies(config.strategies)
 
     def _load_strategies(self, strategy_config: Dict[str, Any]) -> Dict[str, BaseStrategy]:

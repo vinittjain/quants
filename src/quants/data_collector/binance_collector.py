@@ -78,20 +78,23 @@ class BinanceDataCollector(BaseDataCollector):
         try:
             df = pd.read_csv(file_path, parse_dates=["open_time", "close_time"])
             logger.info(f"Data loaded from {file_path}")
-            
+
             # Convert to timezone-aware datetime if not already
-            if df['open_time'].dt.tz is None:
-                df["open_time"] = df["open_time"].dt.tz_localize(self.utc_tz).dt.tz_convert(self.local_tz)
-                df["close_time"] = df["close_time"].dt.tz_localize(self.utc_tz).dt.tz_convert(self.local_tz)
+            if df["open_time"].dt.tz is None:
+                df["open_time"] = (
+                    df["open_time"].dt.tz_localize(self.utc_tz).dt.tz_convert(self.local_tz)
+                )
+                df["close_time"] = (
+                    df["close_time"].dt.tz_localize(self.utc_tz).dt.tz_convert(self.local_tz)
+                )
             else:
                 df["open_time"] = df["open_time"].dt.tz_convert(self.local_tz)
                 df["close_time"] = df["close_time"].dt.tz_convert(self.local_tz)
-            
+
             return df
         except FileNotFoundError:
             logger.info(f"No existing data found for {symbol} at interval {interval}")
             return pd.DataFrame()
-
 
     def save_data(self, data: Dict[str, pd.DataFrame], interval: str) -> None:
         for symbol, df in data.items():
@@ -135,12 +138,14 @@ class BinanceDataCollector(BaseDataCollector):
             if s["symbol"].endswith("USDT") and s["status"] == "TRADING"
         ]
 
-    def collect_price_data(self, symbols: List[str], interval: str, lookback_days: int = 30) -> Dict[str, pd.DataFrame]:
+    def collect_price_data(
+        self, symbols: List[str], interval: str, lookback_days: int = 30
+    ) -> Dict[str, pd.DataFrame]:
         price_data = {}
         for symbol in symbols:
             data = self.collect_historical_data(symbol, interval, lookback_days)
             if not data.empty:
-                price_data[symbol] = data[['close']]
+                price_data[symbol] = data[["close"]]
         return price_data
 
     def collect_market_cap_data(self, symbols: List[str]) -> Dict[str, float]:
@@ -148,7 +153,7 @@ class BinanceDataCollector(BaseDataCollector):
         for symbol in symbols:
             try:
                 ticker = self.platform.client.get_ticker(symbol=symbol)
-                market_cap = float(ticker['volume']) * float(ticker['lastPrice'])
+                market_cap = float(ticker["volume"]) * float(ticker["lastPrice"])
                 market_cap_data[symbol] = market_cap
             except Exception as e:
                 logger.error(f"Failed to fetch market cap for {symbol}: {e}")

@@ -1,6 +1,8 @@
-import yaml
-from typing import List, Dict, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List
+
+import yaml
+
 
 class ConfigLoader:
     def __init__(self, config_path: str):
@@ -8,26 +10,26 @@ class ConfigLoader:
         self.config_data = self._load_yaml()
 
     def _load_yaml(self) -> Dict[str, Any]:
-        with open(self.config_path, 'r') as file:
+        with open(self.config_path, "r") as file:
             return yaml.safe_load(file)
 
     def get_cex_config(self) -> Dict[str, Any]:
-        return self.config_data.get('cex', {})
+        return self.config_data.get("cex", {})
 
     def get_analysis_config(self) -> Dict[str, Any]:
-        return self.config_data.get('analysis', {})
+        return self.config_data.get("analysis", {})
 
     def get_strategies_config(self) -> Dict[str, Any]:
-        return self.config_data.get('strategies', {})
+        return self.config_data.get("strategies", {})
 
     def get_data_storage_config(self) -> Dict[str, Any]:
-        return self.config_data.get('data_storage', {})
+        return self.config_data.get("data_storage", {})
 
     def get_full_config(self) -> Dict[str, Any]:
         return self.config_data
 
     def save_config(self, config: Dict[str, Any]):
-        with open(self.config_path, 'w') as file:
+        with open(self.config_path, "w") as file:
             yaml.dump(config, file)
 
 
@@ -40,21 +42,23 @@ class CEXConfig:
     kline_intervals: List[str]
     timezone: str
 
+
 @dataclass
 class StrategyConfig:
     name: str
     parameters: Dict[str, Any]
+
 
 @dataclass
 class AnalysisConfig:
     name: str
     parameters: Dict[str, Any]
 
+
 @dataclass
 class DataStorageConfig:
     data_path: str
     enabled: bool
-
 
 
 @dataclass
