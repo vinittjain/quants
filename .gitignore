@@ -1,0 +1,47 @@
+# Python build, cache, and .vscode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+*.egg-info/
+dist/
+build/
+.vscode/
+
+.venv/  
+venv/
+
+.venv
+venv
+
+docs/*
+
+logs/
+data/
+
+
+
+# Ignore running config
+
+artifacts/run_config.yaml
+
+
+# Ignore all files in the strategies directory
+src/quants/strategies/*
+
+
+# But don't ignore these files
+# !src/quants/strategies/__init__.py
+# !src/quants/strategies/base.py
+
+
+# Ignore all files in the strategies directory
+src/quants/analysis/*
+
+# But don't ignore these files
+!src/quants/analysis/__init__.py
+!src/quants/analysis/base.py
+
+# Dont track running config file
+artifacts/run.yaml
