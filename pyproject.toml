@@ -12,6 +12,7 @@ dependencies = [
     "plotly==5.18.0",
     "pandas_ta==0.3.14b0",
     "pandas==1.3.3",
+    "numpy==1.26.4",
     "pycoingecko",
     "python-binance",
     "schedule",
@@ -23,7 +24,8 @@ dependencies = [
     "pyyaml",  # Added for config file handling
     "pytz",
     "mplfinance",
-    "networkx"
+    "networkx",
+    "ta"
 ]
 
 [project.optional-dependencies]

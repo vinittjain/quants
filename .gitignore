@@ -32,8 +32,8 @@ src/quants/strategies/*
 
 
 # But don't ignore these files
-# !src/quants/strategies/__init__.py
-# !src/quants/strategies/base.py
+!src/quants/strategies/__init__.py
+!src/quants/strategies/base.py
 
 
 # Ignore all files in the strategies directory

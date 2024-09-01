@@ -7,6 +7,7 @@ from .visualization.chart_drawer import ChartDrawer
 
 logger = get_logger(__name__)
 
+
 class AnalysisRunner:
     def __init__(self, collector, config):
         self.collector = collector
@@ -27,7 +28,7 @@ class AnalysisRunner:
 
     def run_analysis(self, analysis_name: str, symbols: list[str], interval: str):
         logger.info(f"Running {analysis_name} for {len(symbols)} symbols on {interval} interval")
-        
+
         analysis = self.analyses.get(analysis_name)
         if not analysis:
             logger.error(f"Analysis {analysis_name} not found")
@@ -41,7 +42,9 @@ class AnalysisRunner:
         result = analysis.perform_analysis(price_data, market_cap_data)
 
         # Visualize results
-        chart_path = os.path.join(self.config.data_path, "analysis_charts", f"{analysis_name}_result.png")
+        chart_path = os.path.join(
+            self.config.data_path, "analysis_charts", f"{analysis_name}_result.png"
+        )
         analysis.visualize(chart_path, result)
 
         logger.info(f"Analysis {analysis_name} completed. Results saved to {chart_path}")
