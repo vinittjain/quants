@@ -18,6 +18,7 @@ dependencies = [
     "schedule",
     "ta",
     "binance-connector",
+    "pycoingecko",
     "matplotlib",
     "seaborn",
     "loguru",
@@ -26,7 +27,7 @@ dependencies = [
     "mplfinance",
     "networkx",
     "ta",
-    "sklearn",
+    "scikit-learn",
     "bokeh",]
 
 [project.optional-dependencies]
